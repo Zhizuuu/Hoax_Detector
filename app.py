@@ -62,16 +62,19 @@ app.config['MAIL_DEFAULT_SENDER'] = ('Verify.ai', app.config['MAIL_USERNAME'])
 mail = Mail(app)
 
 # ╭─[ C. NLTK (DIPERBAIKI) ]───────────────────────────────────────╮
+nltk.data.path.append('./nltk_data')
+
+# ✔️ Coba akses stopwords tanpa download ulang
 try:
-    nltk.data.find('corpora/stopwords')
+    stop_words = set(stopwords.words("indonesian"))
 except LookupError:
-    print("[NLTK] Paket 'stopwords' tidak ditemukan. Mengunduh...")
-    nltk.download("stopwords")
+    print("[ERROR] Stopwords 'indonesian' tidak tersedia. Pastikan 'nltk_data/corpora/stopwords/' ada.")
+
+# ✔️ Coba buat lemmatizer
 try:
-    nltk.data.find('corpora/wordnet')
+    lemmatizer = WordNetLemmatizer()
 except LookupError:
-    print("[NLTK] Paket 'wordnet' tidak ditemukan. Mengunduh...")
-    nltk.download("wordnet")
+    print("[ERROR] WordNet tidak tersedia. Pastikan 'nltk_data/corpora/wordnet/' ada.")
     
 stop_words = set(stopwords.words("indonesian"))
 lemmatizer = WordNetLemmatizer()
@@ -418,6 +421,7 @@ def generate_avatar_url(user_obj):
         params += "&topType=ShortHairShortFlat"
 
     return base_url + params
+
 
 # Route untuk halaman utama (index.html)
 @app.route('/')
