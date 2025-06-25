@@ -10,5 +10,5 @@ flask-cors
 beautifulsoup4
 xgboost
 gunicorn
- scikit-learn
- flask_mail
+ scikit-le
+Flask-Mail
