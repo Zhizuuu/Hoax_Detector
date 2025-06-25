@@ -13,3 +13,4 @@ gunicorn
  scikit-learn
 Flask
 flask_mail
+dotenv
