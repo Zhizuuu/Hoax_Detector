@@ -426,7 +426,11 @@ def generate_avatar_url(user_obj):
 # Route untuk halaman utama (index.html)
 @app.route('/')
 def home():
-    return "Halo, aplikasi berhasil dijalankan!"
+    # Logika sederhana: jika pengguna sudah login, arahkan ke dashboard.
+    # Jika belum, arahkan ke halaman login.
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 # GANTI FUNGSI LAMA ANDA DENGAN YANG INI DI app.py
 
