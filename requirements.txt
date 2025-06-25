@@ -11,3 +11,4 @@ beautifulsoup4
 xgboost
 gunicorn
  scikit-learn
+ flask_mail
