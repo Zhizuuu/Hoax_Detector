@@ -9,3 +9,5 @@ numpy
 flask-cors
 beautifulsoup4
 xgboost
+gunicorn
+ scikit-learn
