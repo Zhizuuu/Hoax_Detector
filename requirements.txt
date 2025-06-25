@@ -1,0 +1,11 @@
+flask
+flask_sqlalchemy
+pymysql
+werkzeug
+toml
+requests
+nltk
+numpy
+flask-cors
+beautifulsoup4
+xgboost
