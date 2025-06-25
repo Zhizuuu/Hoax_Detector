@@ -11,4 +11,5 @@ beautifulsoup4
 xgboost
 gunicorn
  scikit-learn
-Flask-Mail
+Flask
+flask_mail
