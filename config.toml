@@ -1,6 +1,10 @@
 [database]
-host = "127.0.0.1"
+host     = "centerbeam.proxy.rlwy.net"
 user = "root"
-password = ""
-dbname = "verify"
-port = "3307"
+password = "EwLUDWNJdGUYbDQUAfmSseFOAAyxiQux"
+dbname   = "railway"
+port     = 56518
+
+
+
+
