@@ -460,41 +460,50 @@ def dashboard():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Jika pengguna sudah login (sudah ada session), langsung arahkan ke dashboard
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
 
-    # Jika metode request adalah POST (pengguna menekan tombol "Masuk")
+    # Akun fallback jika database tidak bisa diakses
+    fallback_user = {
+        "id": 9999,
+        "username": "guest",
+        "email": "guest@local",
+        "password": "guest123"  # plaintext fallback, demi keperluan demo saja
+    }
+
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # Validasi sederhana agar tidak kosong
         if not email or not password:
             flash('Email dan password harus diisi.', 'danger')
             return redirect(url_for('login'))
 
-        # Cari pengguna di database berdasarkan email
-        user = User.query.filter_by(email=email).first()
+        try:
+            # Usahakan login dari database
+            user = User.query.filter_by(email=email).first()
+            if user and check_password_hash(user.password, password):
+                session['user_id'] = user.id
+                session['username'] = user.username
+                user.last_seen = datetime.utcnow()
+                db.session.commit()
+                flash(f'Selamat datang kembali, {user.username}!', 'success')
+                return redirect(url_for('dashboard'))
+        except Exception as e:
+            print(f"[LOGIN ERROR] Database tidak bisa diakses: {e}")
 
-        # Cek apakah pengguna ada DAN passwordnya cocok
-        if user and check_password_hash(user.password, password):
-            # ---- BAGIAN KUNCI ----
-            # Jika berhasil, simpan ID dan username pengguna ke dalam session
-            session['user_id'] = user.id
-            session['username'] = user.username
-            user.last_seen = datetime.utcnow()
-            db.session.commit()
-            flash(f'Selamat datang kembali, {user.username}!', 'success')
-            # Arahkan (redirect) ke fungsi/route 'dashboard'
+        # Fallback jika gagal akses DB atau login biasa gagal
+        if email == fallback_user["email"] and password == fallback_user["password"]:
+            session['user_id'] = fallback_user["id"]
+            session['username'] = fallback_user["username"]
+            flash('Login menggunakan akun guest.', 'info')
             return redirect(url_for('dashboard'))
-        else:
-            # Jika pengguna tidak ada atau password salah
-            flash('Email atau password salah. Silakan coba lagi.', 'danger')
-            return redirect(url_for('login'))
 
-    # Jika metode adalah GET, tampilkan halaman login biasa
+        flash('Email atau password salah, atau server database tidak tersedia.', 'danger')
+        return redirect(url_for('login'))
+
     return render_template('login.html')
+
 
 
 @app.route('/signup', methods=['GET', 'POST'])
