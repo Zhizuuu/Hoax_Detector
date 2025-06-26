@@ -218,38 +218,94 @@
 
     </div>
 
-    <div class="sidebar-section history">
-  <h4 class="section-title">CHAT HISTORY</h4>
-  <ul id="history-list">
-    {% if history %}
-    {% for item in history %}
-    <li>
-      <a href="#" class="history-item" data-id="{{ item.id }}">
-        {{ item.text[:35] }}{{ '...' if item.text|length > 35 else '' }}
-      </a>
-    </li>
-    {% endfor %}
-    {% else %}
-    <li id="no-history-placeholder">
-      <p style="color: #a0a0a0; padding: 0 12px; font-size: 14px;">Belum ada riwayat.</p>
-    </li>
-    {% endif %}
-  </ul>
-</div>
+    <section id="chatbot-app">
+        <div class="section-title-wrapper">
+            <h2 class="section-title"
+                style="font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 600; color: #333;">CHATBOT AI
+            </h2>
+        </div>
 
-{% if predictions %}
-<div class="sidebar-section">
-  <h4 class="section-title">HASIL PREDIKSI</h4>
-  <ul>
-    {% for p in predictions %}
-    <li style="padding: 0 12px 10px;">
-      <strong>{{ p.label }}</strong> - <em>{{ p.text[:35] }}{{ '...' if p.text|length > 35 else '' }}</em><br>
-      <small>{{ p.explanation }}</small>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
+        <div class="app-layout-container" id="chatbot-app-layout">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="header-actions">
+                        <button class="header-btn active"><span>💬</span><span class="btn-text">Chats</span></button>
+                    </div>
+                    <button class="sidebar-toggle"
+                        id="sidebar-toggle-btn"><span></span><span></span><span></span></button>
+                </div>
+
+                <div class="sidebar-section history">
+                    <h4 class="section-title">CHAT HISTORY</h4>
+                    <ul id="history-list">
+                        {% if history %}
+                        {% for item in history %}
+                        <li>
+                            <a href="#" class="history-item" data-id="{{ item.id }}">
+                                {{ item.input_text[:35] }}{{ '...' if item.input_text|length > 35 else '' }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                        {% else %}
+                        <li id="no-history-placeholder">
+                            <p style="color: #a0a0a0; padding: 0 12px; font-size: 14px;">Belum ada riwayat.</p>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="sidebar-footer">
+                    <button class="new-chat-btn" id="new-chat-btn"><span>+</span> New chat</button>
+                    <div class="user-profile">
+                        <img src="{{ url_for('static', filename='Image/ryan.jpg') }}" alt="User Profile"
+                            onerror="this.onerror=null;this.src='https://placehold.co/40x40/71717a/E0E0E0?text=R';">
+                        <span>{{ user.username if user else 'Guest' }}</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content" id="main-content-area">
+
+                <div id="chat-area">
+                    <div id="initial-content">
+                        <div class="content-header">
+                            <h1>Selamat Datang, {{ user.username if user else 'Pengguna' }}!</h1>
+                            <h2>Siap menganalisis berita?</h2>
+                        </div>
+                        <div class="content-section">
+                            <div class="section-header">
+                                <h3>Contoh Penggunaan</h3>
+                            </div>
+                            <div class="automation-cards">
+                                <div class="automation-card">
+                                    <p>Tempel link berita dari portal online</p>
+                                </div>
+                                <div class="automation-card">
+                                    <p>Ketikkan judul berita yang Anda ragukan</p>
+                                </div>
+                                <div class="automation-card">
+                                    <p>Masukkan isi pesan berantai dari WhatsApp</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="loader" style="display: none; text-align: center; padding: 2rem;">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="color: #8a2be2;"></i>
+                        <p style="margin-top: 1rem; color: #a0a0a0;">Menganalisis...</p>
+                    </div>
+                    <div id="result-container"></div>
+                </div>
+
+                <form class="simple-detector-form" id="detector-form">
+                    <input type="text" id="link-input"
+                        placeholder="Masukkan kalimat, judul berita, atau tempel link di sini..." required />
+                    <button type="submit" id="search-link-btn">Cari</button>
+                </form>
+
+            </main>
+        </div>
+    </section>
+
 
 
 
