@@ -32,8 +32,8 @@ vectorizer = joblib.load(VEC_PATH)
 xgb_clf    = joblib.load(MODEL_PATH)
 
 # ╭─[ A. KONSTANTA ‒ API KEY ]─────────────────────────────────────╮
-API_KEY  = os.getenv("FACTCHECK_API_KEY")
-HF_TOKEN = os.getenv("HF_TOKEN")
+API_KEY  = os.getenv("FACTCHECK_API_KEY", "AIzaSyAcCUlfc9StM6hm6OyAn1JlAgq9I-BCtsM")
+HF_TOKEN = os.getenv("HF_TOKEN", "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")
 print("[INIT] FACTCHECK_KEY:", bool(API_KEY),
       "| HF_TOKEN:", bool(HF_TOKEN))
 
