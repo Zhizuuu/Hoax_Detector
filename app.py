@@ -436,81 +436,65 @@ def home():
 
 @app.route('/dashboard')
 def dashboard():
+    # 1. Cek sesi pengguna
     if 'user_id' not in session:
         flash('Anda harus login terlebih dahulu untuk mengakses halaman ini.', 'warning')
         return redirect(url_for('login'))
-
-    if session['user_id'] == 9999:
-        # Mode guest
-        user = {
-            'username': 'guest',
-            'email': 'guest@local',
-            'avatar_url': '/static/default-avatar.png'
-        }
-        history = []  # atau pakai memori sementara jika Anda simpan
-        return render_template('dashboard.html', user=user, history=history)
     
-    # Jika bukan guest, tetap pakai database
-    try:
-        user = User.query.get(session['user_id'])
-        if not user:
-            session.clear()
-            flash('Sesi tidak valid, silakan login kembali.', 'danger')
-            return redirect(url_for('login'))
-        history = user.predictions
-        return render_template('dashboard.html', user=user, history=history)
-    except Exception as e:
-        print('[ERROR] /dashboard:', e)
-        flash('Terjadi kesalahan saat memuat dashboard.', 'danger')
+    # 2. Ambil objek user lengkap
+    user = User.query.get(session['user_id'])
+    
+    # 3. Pengaman sesi
+    if not user:
+        session.clear()
+        flash('Sesi tidak valid, silakan login kembali.', 'danger')
         return redirect(url_for('login'))
 
+    # 4. Ambil riwayat prediksi untuk pengguna ini dari database
+    #    Relasi 'predictions' yang kita buat di model akan otomatis mengambil data ini.
+    #    Data sudah diurutkan dari yang terbaru berkat 'order_by' di backref.
+    user_history = user.predictions 
+
+    # 5. Kirim objek 'user' dan 'history' ke template
+    return render_template('dashboard.html', user=user, history=user_history)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Jika pengguna sudah login (sudah ada session), langsung arahkan ke dashboard
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
 
-    # Akun fallback jika database tidak bisa diakses
-    fallback_user = {
-        "id": 9999,
-        "username": "guest",
-        "email": "guest@local",
-        "password": "guest123"  # plaintext fallback, demi keperluan demo saja
-    }
-
+    # Jika metode request adalah POST (pengguna menekan tombol "Masuk")
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
 
+        # Validasi sederhana agar tidak kosong
         if not email or not password:
             flash('Email dan password harus diisi.', 'danger')
             return redirect(url_for('login'))
 
-        try:
-            # Usahakan login dari database
-            user = User.query.filter_by(email=email).first()
-            if user and check_password_hash(user.password, password):
-                session['user_id'] = user.id
-                session['username'] = user.username
-                user.last_seen = datetime.utcnow()
-                db.session.commit()
-                flash(f'Selamat datang kembali, {user.username}!', 'success')
-                return redirect(url_for('dashboard'))
-        except Exception as e:
-            print(f"[LOGIN ERROR] Database tidak bisa diakses: {e}")
+        # Cari pengguna di database berdasarkan email
+        user = User.query.filter_by(email=email).first()
 
-        # Fallback jika gagal akses DB atau login biasa gagal
-        if email == fallback_user["email"] and password == fallback_user["password"]:
-            session['user_id'] = fallback_user["id"]
-            session['username'] = fallback_user["username"]
-            flash('Login menggunakan akun guest.', 'info')
+        # Cek apakah pengguna ada DAN passwordnya cocok
+        if user and check_password_hash(user.password, password):
+            # ---- BAGIAN KUNCI ----
+            # Jika berhasil, simpan ID dan username pengguna ke dalam session
+            session['user_id'] = user.id
+            session['username'] = user.username
+            user.last_seen = datetime.utcnow()
+            db.session.commit()
+            flash(f'Selamat datang kembali, {user.username}!', 'success')
+            # Arahkan (redirect) ke fungsi/route 'dashboard'
             return redirect(url_for('dashboard'))
+        else:
+            # Jika pengguna tidak ada atau password salah
+            flash('Email atau password salah. Silakan coba lagi.', 'danger')
+            return redirect(url_for('login'))
 
-        flash('Email atau password salah, atau server database tidak tersedia.', 'danger')
-        return redirect(url_for('login'))
-
+    # Jika metode adalah GET, tampilkan halaman login biasa
     return render_template('login.html')
-
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -1159,6 +1143,7 @@ def get_accuracy_by_label():
     except Exception as e:
         logging.error(f"Error pada get_accuracy_by_label: {e}")
         return jsonify({"error": "Gagal mengambil data akurasi"}), 500
+
 
 # Menjalankan aplikasi jika file ini dieksekusi secara langsung
 if __name__ == '__main__':
