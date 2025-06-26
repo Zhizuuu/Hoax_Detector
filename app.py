@@ -436,27 +436,34 @@ def home():
 
 @app.route('/dashboard')
 def dashboard():
-    # 1. Cek sesi pengguna
     if 'user_id' not in session:
         flash('Anda harus login terlebih dahulu untuk mengakses halaman ini.', 'warning')
         return redirect(url_for('login'))
+
+    if session['user_id'] == 9999:
+        # Mode guest
+        user = {
+            'username': 'guest',
+            'email': 'guest@local',
+            'avatar_url': '/static/default-avatar.png'
+        }
+        history = []  # atau pakai memori sementara jika Anda simpan
+        return render_template('dashboard.html', user=user, history=history)
     
-    # 2. Ambil objek user lengkap
-    user = User.query.get(session['user_id'])
-    
-    # 3. Pengaman sesi
-    if not user:
-        session.clear()
-        flash('Sesi tidak valid, silakan login kembali.', 'danger')
+    # Jika bukan guest, tetap pakai database
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.clear()
+            flash('Sesi tidak valid, silakan login kembali.', 'danger')
+            return redirect(url_for('login'))
+        history = user.predictions
+        return render_template('dashboard.html', user=user, history=history)
+    except Exception as e:
+        print('[ERROR] /dashboard:', e)
+        flash('Terjadi kesalahan saat memuat dashboard.', 'danger')
         return redirect(url_for('login'))
 
-    # 4. Ambil riwayat prediksi untuk pengguna ini dari database
-    #    Relasi 'predictions' yang kita buat di model akan otomatis mengambil data ini.
-    #    Data sudah diurutkan dari yang terbaru berkat 'order_by' di backref.
-    user_history = user.predictions 
-
-    # 5. Kirim objek 'user' dan 'history' ke template
-    return render_template('dashboard.html', user=user, history=user_history)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
