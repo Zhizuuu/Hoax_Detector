@@ -3,7 +3,7 @@ host     = "centerbeam.proxy.rlwy.net"
 user = "root"
 password = "EwLUDWNJdGUYbDQUAfmSseFOAAyxiQux"
 dbname   = "railway"
-port     = 56518
+port     = 3306
 
 
 
